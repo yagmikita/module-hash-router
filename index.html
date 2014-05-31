@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Router test</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="./router.js"></script>
+        <script>
+            window.document.addEventListener('DOMContentLoaded', function() {
+                window.router
+                    .setDefaultCallback(function(Request) {
+                        console.log('... => Loading module: "' + Request.module + '", page: "' + Request.page + '", params: ', Request.params);
+                    })
+                    .setRoutes({
+                        registration: {
+                            pattern: /^(registration){1}\/(\/mode\/(?:[A-z0-9\-]+)?)?$/i
+                        },
+                        chat: {
+                            pattern: /^(chat){1}(?:\/)(:\/id\/(?:\d+)?)?$/i
+                        },
+                        my: {
+                            pattern: /^(my){1}(?:\/)?([A-z0-9\-]+)?(\/mode\/(?:[A-z0-9\-]+)?)?(\/id-media\/(?:\d+)?)?(?:\/)?$/i
+                        },
+                        user: {
+                            pattern: /^(user){1}(?:\/)?([A-z0-9\-]+)?(\/id\/(?:\d+)?)?(\/mode\/(?:[A-z0-9\-]+)?)?(\/id-media\/(?:\d+)?)?(?:\/)?$/i
+                        },
+                        upgrade: {
+                            pattern: /^(upgrade){1}(?:\/)?([A-z0-9\-]+)?(\/id\/(?:\d+)?)?(\/code\/(?:[A-z0-9\-]+)?)?$/i
+                        },
+                        site: {
+                            pattern: /(terms-of-use|about-us|help)/i
+                        }
+                    })
+                    .enable();
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Follow these hyper-links and enjoy "hash-router"</h1>
+        <a href="file:///var/www/dev/js/router/index.html">:: Home ::</a>
+        <br/>
+        <br/>
+        <a href="#upgrade">upgrade</a>&nbsp;
+        <a href="#upgrade/benefits">upgrade/benefits</a>&nbsp;
+        <a href="#upgrade/benefits/id/1683">upgrade/benefits/id/1683</a>&nbsp;
+        <a href="#upgrade/benefits/code/pa03">upgrade/benefits/code/pa03</a>&nbsp;
+        <a href="#upgrade/benefits/id/1683/code/pa03">upgrade/benefits/id/1683/code/pa03</a>
+        <br/>
+        <br/>
+        <a href="#user">user</a>&nbsp;
+        <a href="#user/id/1701">user/id/1701</a>&nbsp;
+        <a href="#user/mode/photo">user/mode/photo</a>&nbsp;
+        <a href="#user/id-media/8761903">user/id-media/8761903</a>&nbsp;
+        <a href="#user/id/1701/mode/photo">user/id/1701/mode/photo</a>&nbsp;
+        <a href="#user/id/1701/id-media/8761903">user/id/1701/id-media/8761903</a>&nbsp;
+        <a href="#user/mode/photo/id-media/8761903">user/mode/photo/id-media/8761903</a>&nbsp;
+        <a href="#user/id/1701/mode/photo/id-media/8761903">user/id/1701/mode/photo/id-media/8761903</a>&nbsp;
+        <br/>
+        <br/>
+        <a href="#my/profile/mode/photo/id-media/273947">my/profile/mode/photo/id-media/273947</a>
+        <br/>
+        <br/>
+        <a href="#help">help</a>&nbsp;
+        <a href="#about-us">about-us</a>&nbsp;
+        <a href="#terms-of-use">terms-of-use</a>&nbsp;
+        <a href="#test">test</a>&nbsp;
+</html>

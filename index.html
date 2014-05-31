@@ -6,33 +6,31 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script type="text/javascript" src="./router.js"></script>
         <script>
-            window.document.addEventListener('DOMContentLoaded', function() {
-                window.router
-                    .setDefaultCallback(function(Request) {
-                        console.log('... => Loading module: "' + Request.module + '", page: "' + Request.page + '", params: ', Request.params);
-                    })
-                    .setRoutes({
-                        registration: {
-                            pattern: /^(registration){1}\/(\/mode\/(?:[A-z0-9\-]+)?)?$/i
-                        },
-                        chat: {
-                            pattern: /^(chat){1}(?:\/)(:\/id\/(?:\d+)?)?$/i
-                        },
-                        my: {
-                            pattern: /^(my){1}(?:\/)?([A-z0-9\-]+)?(\/mode\/(?:[A-z0-9\-]+)?)?(\/id-media\/(?:\d+)?)?(?:\/)?$/i
-                        },
-                        user: {
-                            pattern: /^(user){1}(?:\/)?([A-z0-9\-]+)?(\/id\/(?:\d+)?)?(\/mode\/(?:[A-z0-9\-]+)?)?(\/id-media\/(?:\d+)?)?(?:\/)?$/i
-                        },
-                        upgrade: {
-                            pattern: /^(upgrade){1}(?:\/)?([A-z0-9\-]+)?(\/id\/(?:\d+)?)?(\/code\/(?:[A-z0-9\-]+)?)?$/i
-                        },
-                        site: {
-                            pattern: /(terms-of-use|about-us|help)/i
-                        }
-                    })
-                    .enable();
-            });
+            router
+                .setDefaultCallback(function(Request) {
+                    console.log('... => Loading module: "' + Request.module + '", page: "' + Request.page + '", params: ', Request.params);
+                })
+                .setRoutes({
+                    registration: {
+                        pattern: /^(registration){1}\/(\/mode\/(?:[A-z0-9\-]+)?)?$/i
+                    },
+                    chat: {
+                        pattern: /^(chat){1}(?:\/)(:\/id\/(?:\d+)?)?$/i
+                    },
+                    my: {
+                        pattern: /^(my){1}(?:\/)?([A-z0-9\-]+)?(\/mode\/(?:[A-z0-9\-]+)?)?(\/id-media\/(?:\d+)?)?(?:\/)?$/i
+                    },
+                    user: {
+                        pattern: /^(user){1}(?:\/)?([A-z0-9\-]+)?(\/id\/(?:\d+)?)?(\/mode\/(?:[A-z0-9\-]+)?)?(\/id-media\/(?:\d+)?)?(?:\/)?$/i
+                    },
+                    upgrade: {
+                        pattern: /^(upgrade){1}(?:\/)?([A-z0-9\-]+)?(\/id\/(?:\d+)?)?(\/code\/(?:[A-z0-9\-]+)?)?$/i
+                    },
+                    site: {
+                        pattern: /(terms-of-use|about-us|help)/i
+                    }
+                })
+                .enable();
         </script>
     </head>
     <body>

@@ -25,8 +25,6 @@
 
         var defaultParams = {};
 
-        //var paramPattern = '((?:\/)(?:[A-z0-9\-]+)(?:\/)?(?:[A-z0-9\-]+)?)';
-
         var getDefaultRouteMap = function() {
             return {};
         };
@@ -35,70 +33,94 @@
             return window.location.hash.substring(1);
         };
 
-        var preparePair = function(pair) {
-            pair = pair.substring(1);
-            pair = pair.split('/');
-            return {
-                key: pair[0],
-                value: pair[1]
-            };
-        };
-
-        var prepareParams = function(requestParams) {
-            var params = {};
-            for (var i = 0; i <= requestParams.length - 1; i++) {
-                var resolvedPair = preparePair(requestParams[i]);
-                params[resolvedPair['key']] = resolvedPair['value'];
-            }
-            return params;
-        };
-
-        var resolveParams = function(requestParams) {
-            var page = defaultPage;
-            var params = {};
-            var paramsPairLikePattern = /^\/[A-z0-9\-]+\/[A-z0-9\-]+$/i;
-            if (requestParams.length) {
-                if (requestParams[0].match(paramsPairLikePattern)) {
-                    params = prepareParams(requestParams);
-                } else {
-                    page = requestParams[0];
-                    params = prepareParams(requestParams.splice(1, requestParams.length - 1));
+        var ParamsResolverFactory = function() {
+            var StrictResolver = {
+                prepareParams: function(params) {
+                    var _params = {};
+                    for (var i = 0; i <= params.length - 1; i++) {
+                        var idx = i + 1;
+                        _params['param' + idx] = params[i];
+                    }
+                    return _params;
+                },
+                resolveParams: function(requestParams) {
+                    var page = defaultPage;
+                    var params = defaultParams;
+                    if (requestParams.params.length > 2) {
+                        params = requestParams.params.splice(2, requestParams.params.length-2);
+                    }
+                    return {
+                        module: requestParams.moduleName,
+                        page: page,
+                        params: StrictResolver.prepareParams(params)
+                    };
                 }
-            }
-            return {
-                page: page,
-                params: params.length
-                    ? params.filter(function(param) {
-                        return typeof param !== 'undefined';
-                    })
-                    : params
+            };
+            var NamedResolver = {
+                preparePair: function(pair) {
+                    pair = pair.substring(1);
+                    pair = pair.split('/');
+                    return {
+                        key: pair[0],
+                        value: pair[1]
+                    };
+                },
+                prepareParams: function(requestParams) {
+                    var params = {};
+                    for (var i = 0; i <= requestParams.length - 1; i++) {
+                        var resolvedPair = NamedResolver.preparePair(requestParams[i]);
+                        params[resolvedPair['key']] = resolvedPair['value'];
+                    }
+                    return params;
+                },
+                resolveParams: function(requestParams) {
+                    var page = defaultPage;
+                    var params = defaultParams;
+                    var paramsPairLikePattern = /^\/[A-z0-9\-]+\/[A-z0-9\-]+$/i;
+                    if (requestParams.params.length > 2) {
+                        if (requestParams.params[2].match(paramsPairLikePattern)) {
+                            params = NamedResolver.prepareParams(requestParams.params.splice(2, requestParams.params.length - 2));
+                        } else {
+                            page = requestParams.params[2];
+                            params = NamedResolver.prepareParams(requestParams.params.splice(3, requestParams.params.length - 3));
+                        }
+                    }
+                    return {
+                        module: requestParams.moduleName,
+                        page: page,
+                        params: params.length
+                            ? params.filter(function(param) {
+                                return typeof param !== 'undefined';
+                            })
+                            : params
+                    };
+                }
+            };
+
+            this.resolve = function(r) {
+                return (new ParamsResolverFactory)[r.mode](r);
+            };
+
+            this.strict = function(params) {
+                return StrictResolver.resolveParams(params);
+            };
+
+            this.named = function(params) {
+                return NamedResolver.resolveParams(params);
             };
         };
 
-        var getRequest = function(params, moduleName) {
-            var module;
-            var page;
-            var paramz;
-            if (params.length <= 1) {
-                module = defaultModule;
-                page = defaultPage;
-                paramz = defaultParams;
-            } else if (params.length === 2) {
-                module =  moduleName;
-                page = moduleName === defaultModule
-                    ? params[1]
-                    : defaultPage;
-                paramz = defaultParams;
-            } else {
-                module =  moduleName;
-                var r = resolveParams(params.splice(2, params.length-2));
-                page = r.page;
-                paramz = r.params;
-            }
+        var getRequest = function(params, moduleName, mode) {
+            var factory = new ParamsResolverFactory();
+            var r = factory.resolve({
+                params: params,
+                moduleName: moduleName,
+                mode: mode
+            });
             return {
-                module: module.replace(/\s/g, ''),
-                page: page.replace(/\s/g, ''),
-                params: paramz
+                module: moduleName,
+                page: r.page.replace(/\s/g, ''),
+                params: r.params
             };
         };
 
@@ -107,9 +129,10 @@
                 var regexp = routesMap[n]['pattern'];
                 if (regexp.test(route)) {
                     beforeNavigateCallback();
+//debugger;
                     var Request = getRequest(regexp.exec(route).filter(function(param) {
                         return typeof param !== 'undefined';
-                    }), n);
+                    }), n, routesMap[n]['mode']);
                     var res = routesMap[n]['handler'](Request);
                     afterNavigateCallback();
                     return res;
@@ -180,6 +203,7 @@
                     var Route = {
                         name: n,
                         pattern: _routesMap[n]['pattern'],
+                        mode: _routesMap[n]['mode'],
                         handler: hasHandler ? _routesMap[n]['handler'] : defaultCallback
                     };
                     this.addRoute(Route);
@@ -199,7 +223,8 @@
                 : Route.handler;
             routesMap[Route.name] = {
                 pattern: Route.pattern,
-                handler: Route.handler
+                handler: Route.handler,
+                mode: Route.mode
             };
             return this;
         };

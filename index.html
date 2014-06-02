@@ -12,22 +12,28 @@
                 })
                 .setRoutes({
                     registration: {
-                        pattern: /^(registration){1}\/(\/mode\/(?:[A-z0-9\-]+)?)?$/i
+                        pattern: /^(registration){1}\/(\/mode\/(?:[A-z0-9\-]+)?)?$/i,
+                        mode: 'named'
                     },
                     chat: {
-                        pattern: /^(chat){1}(?:\/)(:\/id\/(?:\d+)?)?$/i
+                        pattern: /^(chat){1}(?:\/)?(\d+)?$/i,
+                        mode: 'strict'
                     },
                     my: {
-                        pattern: /^(my){1}(?:\/)?([A-z0-9\-]+)?(\/mode\/(?:[A-z0-9\-]+)?)?(\/id-media\/(?:\d+)?)?(?:\/)?$/i
+                        pattern: /^(my){1}(?:\/)?([A-z0-9\-]+)?(\/mode\/(?:[A-z0-9\-]+)?)?(\/id-media\/(?:\d+)?)?(?:\/)?$/i,
+                        mode: 'named'
                     },
                     user: {
-                        pattern: /^(user){1}(?:\/)?([A-z0-9\-]+)?(\/id\/(?:\d+)?)?(\/mode\/(?:[A-z0-9\-]+)?)?(\/id-media\/(?:\d+)?)?(?:\/)?$/i
+                        pattern: /^(user){1}(?:\/)?([A-z0-9\-]+)?(\/id\/(?:\d+)?)?(\/mode\/(?:[A-z0-9\-]+)?)?(\/id-media\/(?:\d+)?)?(?:\/)?$/i,
+                        mode: 'named'
                     },
                     upgrade: {
-                        pattern: /^(upgrade){1}(?:\/)?([A-z0-9\-]+)?(\/id\/(?:\d+)?)?(\/code\/(?:[A-z0-9\-]+)?)?$/i
+                        pattern: /^(upgrade){1}(?:\/)?([A-z0-9\-]+)?(\/id\/(?:\d+)?)?(\/code\/(?:[A-z0-9\-]+)?)?$/i,
+                        mode: 'named'
                     },
                     site: {
-                        pattern: /(terms-of-use|about-us|help)/i
+                        pattern: /(terms-of-use|about-us|help)/i,
+                        mode: 'named'
                     }
                 })
                 .enable();
@@ -56,6 +62,11 @@
         <br/>
         <br/>
         <a href="#my/profile/mode/photo/id-media/273947">my/profile/mode/photo/id-media/273947</a>
+        <br/>
+        <br/>
+        <a href="#chat">chat</a>
+        <a href="#chat/">chat/</a>
+        <a href="#chat/11089">chat/11089</a>
         <br/>
         <br/>
         <a href="#help">help</a>&nbsp;

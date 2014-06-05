@@ -6,37 +6,91 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script type="text/javascript" src="./router.js"></script>
         <script>
-            router
-                .setDefaultCallback(function(Request) {
-                    console.log('... => Loading module: "' + Request.module + '", page: "' + Request.page + '", params: ', Request.params);
-                })
-                .setRoutes({
-                    registration: {
-                        pattern: /^(registration){1}\/(\/mode\/(?:[A-z0-9\-]+)?)?$/i,
-                        mode: 'named'
-                    },
-                    chat: {
-                        pattern: /^(chat){1}(?:\/)?(\d+)?$/i,
-                        mode: 'strict'
-                    },
-                    my: {
-                        pattern: /^(my){1}(?:\/)?([A-z0-9\-]+)?(\/mode\/(?:[A-z0-9\-]+)?)?(\/id-media\/(?:\d+)?)?(?:\/)?$/i,
-                        mode: 'named'
-                    },
-                    user: {
-                        pattern: /^(user){1}(?:\/)?([A-z0-9\-]+)?(\/id\/(?:\d+)?)?(\/mode\/(?:[A-z0-9\-]+)?)?(\/id-media\/(?:\d+)?)?(?:\/)?$/i,
-                        mode: 'named'
-                    },
-                    upgrade: {
-                        pattern: /^(upgrade){1}(?:\/)?([A-z0-9\-]+)?(\/id\/(?:\d+)?)?(\/code\/(?:[A-z0-9\-]+)?)?$/i,
-                        mode: 'named'
-                    },
-                    site: {
-                        pattern: /(terms-of-use|about-us|help)/i,
-                        mode: 'named'
-                    }
-                })
-                .enable();
+
+var UpgradeConfig = {
+    defaultPage: 'index',
+    defaultParams: {},
+    mode: 'named',
+    pattern: /^(upgrade){1}(?:\/)?([A-z0-9\-]+)?(\/id\/(?:\d+)?)?(\/code\/(?:[A-z0-9\-]+)?)?$/i
+};
+
+var UpgradeModule = function() {
+
+    var module = new BaseModule();
+
+    module.pages = {
+        'benefits': function(Request) {
+            console.log('[UpgradeModule]: indexPage(Request): ', Request);
+            alert('indexPage');
+        },
+        'packages': function(Request) {
+            console.log('[UpgradeModule]: editPage(Request): ', Request);
+            alert('editPage');
+        }
+    }
+
+    module.setConfig(UpgradeConfig);
+
+    return module;
+};
+
+var RegisterConfig = {
+    defaultPage: 'index',
+    defaultParams: {},
+    mode: 'std',
+    trapHandler: function(moduleId) {
+        alert(moduleId + ' module can not handle the request');
+    }
+};
+
+var RegisterModule = function() {
+
+    var module = new BaseModule();
+
+    module.pages = {
+        'about-your-date': function(Request) {
+            console.log('[UpgradeModule]: about-your-datePage(Request): ', Request);
+            alert('about-your-date');
+        },
+        'about-yourself': function(Request) {
+            console.log('[UpgradeModule]: about-yourselfPage(Request): ', Request);
+            alert('about-yourself');
+        },
+        'add-a-photo': function(Request) {
+            console.log('[UpgradeModule]: add-a-photoPage(Request): ', Request);
+            alert('add-a-photo');
+        },
+        'see-anyone-interesting': function(Request) {
+            console.log('[UpgradeModule]: see-anyone-interestingPage(Request): ', Request);
+            alert('see-anyone-interesting');
+        }
+    }
+
+    module.setConfig(RegisterConfig);
+
+    return module;
+};
+
+
+window['router'] = new Router();
+window['router'].setDefaultHandler(function(Request) {
+    console.log('Default handler [Request]: ', Request);
+}).setRoutes({
+    register: 'std',
+    upgrade: 'named'
+}).enable();
+
+
+var m = new UpgradeModule();
+m.dispatch();
+m.dispatch(['benefits']);
+m.dispatch(['edit', '123']);
+
+var n = new RegisterModule();
+n.dispatch();
+n.dispatch(['about-your-date']);
+n.dispatch(['test']);
+
         </script>
     </head>
     <body>

@@ -5,122 +5,45 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script type="text/javascript" src="./router.js"></script>
+        <script type="text/javascript" src="./test-modules.js"></script>
         <script>
 
-var UpgradeConfig = {
-    defaultPage: 'index',
-    defaultParams: {},
-    mode: 'named',
-    pattern: /^(upgrade){1}(?:\/)?([A-z0-9\-]+)?(\/id\/(?:\d+)?)?(\/code\/(?:[A-z0-9\-]+)?)?$/i
-};
-
-var UpgradeModule = function() {
-
-    var module = new BaseModule();
-
-    module.pages = {
-        'benefits': function(Request) {
-            console.log('[UpgradeModule]: indexPage(Request): ', Request);
-            alert('indexPage');
-        },
-        'packages': function(Request) {
-            console.log('[UpgradeModule]: editPage(Request): ', Request);
-            alert('editPage');
-        }
-    }
-
-    module.setConfig(UpgradeConfig);
-
-    return module;
-};
-
-var RegisterConfig = {
-    defaultPage: 'index',
-    defaultParams: {},
-    mode: 'std',
-    trapHandler: function(moduleId) {
-        alert(moduleId + ' module can not handle the request');
-    }
-};
-
-var RegisterModule = function() {
-
-    var module = new BaseModule();
-
-    module.pages = {
-        'about-your-date': function(Request) {
-            console.log('[UpgradeModule]: about-your-datePage(Request): ', Request);
-            alert('about-your-date');
-        },
-        'about-yourself': function(Request) {
-            console.log('[UpgradeModule]: about-yourselfPage(Request): ', Request);
-            alert('about-yourself');
-        },
-        'add-a-photo': function(Request) {
-            console.log('[UpgradeModule]: add-a-photoPage(Request): ', Request);
-            alert('add-a-photo');
-        },
-        'see-anyone-interesting': function(Request) {
-            console.log('[UpgradeModule]: see-anyone-interestingPage(Request): ', Request);
-            alert('see-anyone-interesting');
-        }
-    }
-
-    module.setConfig(RegisterConfig);
-
-    return module;
-};
-
-
-window['router'] = new Router();
-window['router'].setDefaultHandler(function(Request) {
-    console.log('Default handler [Request]: ', Request);
-}).setRoutes({
-    register: 'std',
-    upgrade: 'named'
-}).enable();
-
-
-var m = new UpgradeModule();
-m.dispatch();
-m.dispatch(['benefits']);
-m.dispatch(['edit', '123']);
-
-var n = new RegisterModule();
-n.dispatch();
-n.dispatch(['about-your-date']);
-n.dispatch(['test']);
+            window.router = new Router();
+            router.setRoutes({
+                register: 'std',
+                upgrade: 'named',
+                chat: 'singlePage',
+                site: 'std',
+                user: 'named'
+            }).enable();
 
         </script>
     </head>
     <body>
         <h1>Follow these hyper-links and enjoy "hash-router"</h1>
-        <a href="./index.html">:: Home ::</a>
+        <a href="/">:: Home ::</a>
         <br/>
         <br/>
-        <a href="#upgrade">upgrade</a>&nbsp;
-        <a href="#upgrade/benefits">upgrade/benefits</a>&nbsp;
-        <a href="#upgrade/benefits/id/1683">upgrade/benefits/id/1683</a>&nbsp;
-        <a href="#upgrade/benefits/code/pa03">upgrade/benefits/code/pa03</a>&nbsp;
-        <a href="#upgrade/benefits/id/1683/code/pa03">upgrade/benefits/id/1683/code/pa03</a>
+        <a href="/#upgrade">upgrade</a>&nbsp;
+        <a href="/#upgrade/benefits">upgrade/benefits</a>&nbsp;
+        <a href="/#upgrade/benefits/id/1683">upgrade/benefits/id/1683</a>&nbsp;
+        <a href="/#upgrade/benefits/code/pa03">upgrade/benefits/code/pa03</a>&nbsp;
+        <a href="/#upgrade/benefits/id/1683/code/pa03">upgrade/benefits/id/1683/code/pa03</a>
         <br/>
         <br/>
-        <a href="#user">user</a>&nbsp;
-        <a href="#user/id/1701">user/id/1701</a>&nbsp;
-        <a href="#user/mode/photo">user/mode/photo</a>&nbsp;
-        <a href="#user/id-media/8761903">user/id-media/8761903</a>&nbsp;
-        <a href="#user/id/1701/mode/photo">user/id/1701/mode/photo</a>&nbsp;
-        <a href="#user/id/1701/id-media/8761903">user/id/1701/id-media/8761903</a>&nbsp;
-        <a href="#user/mode/photo/id-media/8761903">user/mode/photo/id-media/8761903</a>&nbsp;
-        <a href="#user/id/1701/mode/photo/id-media/8761903">user/id/1701/mode/photo/id-media/8761903</a>&nbsp;
+        <a href="/#user">user</a>&nbsp;
+        <a href="/#user/id/1701">user/id/1701</a>&nbsp;
+        <a href="/#user/mode/photo">user/mode/photo</a>&nbsp;
+        <a href="/#user/id-media/8761903">user/id-media/8761903</a>&nbsp;
+        <a href="/#user/id/1701/mode/photo">user/id/1701/mode/photo</a>&nbsp;
+        <a href="/#user/id/1701/id-media/8761903">user/id/1701/id-media/8761903</a>&nbsp;
+        <a href="/#user/mode/photo/id-media/8761903">user/mode/photo/id-media/8761903</a>&nbsp;
+        <a href="/#user/id/1701/mode/photo/id-media/8761903">user/id/1701/mode/photo/id-media/8761903</a>&nbsp;
         <br/>
         <br/>
-        <a href="#my/profile/mode/photo/id-media/273947">my/profile/mode/photo/id-media/273947</a>
-        <br/>
-        <br/>
-        <a href="#chat">chat</a>
-        <a href="#chat/">chat/</a>
-        <a href="#chat/11089">chat/11089</a>
+        <a href="/#chat">chat</a>
+        <a href="/#chat/">chat/</a>
+        <a href="/#chat/11089">chat/11089</a>
         <br/>
         <br/>
         <a href="#help">help</a>&nbsp;

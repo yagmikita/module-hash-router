@@ -5,8 +5,8 @@ var BaseModule = function() {
 
         var config = {};
 
-        var defaultTrapHandler = function(pageName) {
-            console.log('[Module] getTrapHandler("' + pageName + '"): provided module page does not exist');
+        var defaultTrapHandler = function(moduleId, pageId) {
+            console.log('Module "' + moduleId + '" can not resolve page "' + pageId + '" as it is absent.');
             return false;
         };
 
@@ -27,11 +27,11 @@ var BaseModule = function() {
             return eval('new ' + className + '();');
         };
 
-        var getTrapHandler = function(pageName) {
+        var getTrapHandler = function(moduleId, pageId) {
             if (typeof config['trapHandler'] !== 'undefined') {
-                return config['trapHandler'](pageName);
+                return config['trapHandler'](moduleId, pageId);
             } else {
-                defaultTrapHandler(pageName);
+                return defaultTrapHandler(moduleId, pageId);
             }
         };
 
@@ -41,22 +41,22 @@ var BaseModule = function() {
          * @param Array params
          * @returns Object
          */
-        this.dispatch = function(params) {
-            params = typeof params === 'undefined'
+        this.dispatch = function(requestParams, moduleId) {
+            requestParams = typeof requestParams === 'undefined'
                 ? []
-                : params;
+                : requestParams;
             var Request = getDispatcher()
                 .setConfig({
                     defaultPage: getDefaultPage(),
                     defaultParams: getDefaultParams()
                 })
-                .setParams(params)
+                .setParams(requestParams)
                 .dispatch();
             var pageId = Request.page;
-            if (pageId in this) {
-                return this.pages[pageId](Request);
+            if (pageId in this.pages) {
+                return this.pages[pageId](Request, moduleId);
             } else {
-                return getTrapHandler(pageId);
+                return getTrapHandler(moduleId, pageId);
             }
         };
 
@@ -100,6 +100,21 @@ var BaseDispatcher = function() {
         this.getConfig = function() {
             return config;
         };
+
+        this.prepareParams = function(requestParams) {
+            var _params = {};
+            for (var i = 0; i <= requestParams.length - 1; i++) {
+                var idx = i + 1;
+                var key;
+                if (i === 0) {
+                    key = 'id';
+                } else {
+                    key = 'param' + idx;
+                }
+                _params[key] = requestParams[i];
+            }
+            return _params;
+        };
     };
 
     return new Dispatcher();
@@ -109,20 +124,11 @@ var SinglePageDispatcher = function() {
 
     var dispatcher = new BaseDispatcher();
 
-    dispatcher.prepareParams = function(requestParams) {
-        var _params = {};
-        for (var i = 0; i <= requestParams.length - 1; i++) {
-            var idx = i + 1;
-            _params['param' + idx] = requestParams[i];
-        }
-        return _params;
-    };
-
     dispatcher.dispatch = function() {
         var params = dispatcher.getConfig().defaultParams;
         if (dispatcher.getParams().length) {
-            if (dispatcher.getParams().length > 1) {
-                params = dispatcher.getParams().splice(1, dispatcher.getParams().length - 1);
+            if (dispatcher.getParams().length) {
+                params = dispatcher.getParams();
             }
         }
         return {
@@ -138,15 +144,6 @@ var SinglePageDispatcher = function() {
 var StdDispatcher = function() {
 
     var dispatcher = new BaseDispatcher();
-
-    dispatcher.prepareParams = function(requestParams) {
-        var _params = {};
-        for (var i = 0; i <= requestParams.length - 1; i++) {
-            var idx = i + 1;
-            _params['param' + idx] = requestParams[i];
-        }
-        return _params;
-    };
 
     dispatcher.dispatch = function() {
         var page = dispatcher.getConfig().defaultPage;
@@ -219,7 +216,7 @@ var Router = function() {
     /**
      * @type Array
      */
-    var defaultModes = ['std', 'singlePage', 'named'];
+    var predefinedModes = ['std', 'singlePage'];
 
     var modesPatterns = {
         std: /^([A-z0-9\-]+){1}(?:\/)?([A-z0-9\-]+)?(?:\/)?([A-z0-9\-]+)?$/i,
@@ -230,17 +227,12 @@ var Router = function() {
     /**
      * @type String
      */
-    var defaultMode = 'std';
-
-    /**
-     * @type String
-     */
-    var defaultModule = 'site';
+    var defaultModuleId = 'site';
 
     /**
      * @type Function
      */
-    var defaultHandler = function(){};
+    var defaultMode = 'std';
 
     /**
      * @type Array
@@ -267,32 +259,46 @@ var Router = function() {
         return window.location.hash.substring(1);
     };
 
-    var getModuleConfig = function(moduleId) {
-        var className = moduleId.substring(0,1).toUpperCase() + moduleId.substring(1) + 'Module';
-        return eval('new ' + className + '();').getConfig();
-    };
-
-    var getPatternByMode = function(moduleId, mode) {
-        if (mode === 'std' || mode === 'singlePage') {
-            return modesPatterns[mode];
+    var getPatternByMode = function(moduleId, mode, callback) {
+        if (predefinedModes.indexOf(mode) >= 0) {
+            callback(modesPatterns[mode]);
         } else {
-            var config = getModuleConfig(moduleId)
-            return // get from module config
+            getModule(moduleId, function(module) {
+                var config = module.getConfig();
+                if (typeof config.pattern !== 'undefined') {
+                    callback(config.pattern);
+                } else {
+                    callback(false);
+                }
+            });
         }
     };
 
-    var getRequest = function(params, moduleId, mode) {
-        var factory = new ParamsResolverFactory();
-        var r = factory.resolve({
-            params: params,
-            moduleName: moduleId,
-            mode: mode
-        });
-        return {
-            module: moduleId,
-            page: r.page.replace(/\s/g, ''),
-            params: r.params
-        };
+    var getModule = function(moduleId, callback) {
+        var className = moduleId.substring(0,1).toUpperCase() + moduleId.substring(1) + 'Module';
+        var module;
+        try {
+            module = eval('new ' + className + '();');
+        } catch(error) {
+            console.log('Router: failed to fined module with id "' + moduleId + '"');
+            console.log('Router: attempting to resolve request with default module "' + defaultModuleId + '"');
+            className = defaultModuleId.substring(0,1).toUpperCase() + defaultModuleId.substring(1) + 'Module';
+            module = eval('new ' + className + '();');
+        }
+        callback(module);
+    };
+
+    var getRequestParams = function(params) {
+        if (params.length >= 3) {
+            return params.splice(2, params.length -1);
+        }
+        return [];
+    };
+
+    var grabModuleId = function(route) {
+        var moduleGrabberPattern = /^([A-z0-9\-]+){1}(?:.*)/i;
+        var res = moduleGrabberPattern.exec(route);
+        return res[1];
     };
 
     this.getHash = function() {
@@ -320,16 +326,9 @@ var Router = function() {
         return this;
     };
 
-    this.setDefaultHandler = function(handler) {
-        if (typeof handler === 'function') {
-            defaultHandler = handler;
-        }
-        return this;
-    };
-
-    this.setDefaultModule = function(moduleId) {
+    this.setDefaultModuleId = function(moduleId) {
         if (typeof moduleId === 'string') {
-            defaultModule = moduleId;
+            defaultModuleId = moduleId;
         }
         return this;
     };
@@ -347,7 +346,7 @@ var Router = function() {
 
     this.addRoute = function(Route) {
         Route.mode = typeof Route.mode === 'undefined'
-            ? defaultHandler
+            ? defaultMode
             : Route.mode;
         routesMap[Route.moduleId] = Route.mode;
         return this;
@@ -381,20 +380,40 @@ var Router = function() {
     };
 
     var go = function(route) {
-        for (var moduleId in routesMap) {
-            var regexp = getPatternByMode(routesMap[moduleId]);
-            if (regexp.test(route)) {
-                beforeNavigateCallback();
-                var Request = getRequest(regexp.exec(route).filter(function(param) {
+        var handler = function(regexp, route, moduleId) {
+            var requestParams;
+            regexp = (false === regexp
+                ? modesPatterns.std
+                : regexp);
+            beforeNavigateCallback();
+            if (moduleId === defaultModuleId) {
+                var _params = regexp.exec(route).filter(function(param) {
                     return typeof param !== 'undefined';
-                }), moduleId, routesMap[moduleId]);
-                var res = routesMap[moduleId]['handler'](Request);
-                afterNavigateCallback();
-                return res;
+                });
+                var _page = _params[1];
+                _params[1] = moduleId;
+                _params[2] = _page;
+                requestParams = getRequestParams(_params);
+            } else {
+                requestParams = getRequestParams(regexp.exec(route).filter(function(param) {
+                    return typeof param !== 'undefined';
+                }));
             }
-        }
-        trapHandler();
-        return false;
+            return getModule(moduleId, function(module) {
+                var res = module.dispatch(requestParams, moduleId);
+                afterNavigateCallback();
+            });
+        };
+        var moduleId = grabModuleId(route);
+        getPatternByMode(moduleId, routesMap[moduleId], function(regexp) {
+            if (false === regexp) {
+                return handler(regexp, route, defaultModuleId);
+            } else if (regexp.test(route)) {
+                return handler(regexp, route, moduleId);
+            } else {
+                return trapHandler();
+            }
+        });
     };
 
     var navigate = function(e) {
